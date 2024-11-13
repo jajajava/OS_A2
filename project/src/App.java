@@ -19,8 +19,10 @@ public class App {
         System.out.print("Enter a reference string separated with \", \": ");
         String tempReferenceString = userInput.nextLine();
         if (tempReferenceString.equals("9999")){
+            userInput.close();
             System.out.println("Goodbye.");
             exitApp = true;
+            return;
         }
         //! parse it before assigning to arrayList
 
