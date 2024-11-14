@@ -2,11 +2,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class App {
-    public static ArrayList<String> referenceString = new ArrayList<>();
-    public static ArrayList<String> pageList = new ArrayList<>();
-    //! might need separate int to count page faults
+    public static ArrayList<Integer> referenceString = new ArrayList<>();
+    public static ArrayList<Integer> pageList = new ArrayList<>();
     public static int algorithm;
     public static int framesUsed;
+    public static int pageFaultCounter;
     public static boolean exitApp = false;
     
     public static void main(String[] args) throws Exception {
@@ -16,17 +16,28 @@ public class App {
             pageList.clear();
             algorithm = 0;
             framesUsed = 0;
+            pageFaultCounter = 0;
+
             userInputter(userInput);
             if (exitApp == true){
                 return;
+            } else if (framesUsed != 0){ // If it reached framesUsed, the other values had to have been set too
+                System.out.println("Reference string: " + referenceString.toString());
+                System.out.println("Number of frames: " + framesUsed);
+                System.out.println("Content of frames after each page-fault: ");
+                
+                //! Algorithm selector here
+                FIFO();
+                System.out.println();
+                System.out.println("Number of page faults: " + pageFaultCounter);
             }
-            FIFO();
+            System.out.println("---------------------------------------------");
         }
-        //! Algorithm selector must follow
         userInput.close();
     }
 
     public static void userInputter(Scanner userInput){
+        // Reference string input
         System.out.println();
         System.out.print("Enter a reference string separated with \", \": ");
         String tempReferenceString = userInput.nextLine();
@@ -41,17 +52,25 @@ public class App {
         // Reference string error handling
         //! See if you can go without a clause to have at least one input. If your algos work with empty array, keep it that way
         if (tempRefStringArray.length > 15){
-            System.out.println("You cannot have more than 15 references");
+            System.out.println("You cannot have more than 15 references.");
             return;
         }
+        int toInt = -1;
         for (String s : tempRefStringArray){
             if (s.length() > 1){
-                System.out.println("Each reference must be one digit long");
+                System.out.println("Each reference must be one digit long.");
                 return;
             }
-            referenceString.add(s);
+            try {
+                toInt = Integer.parseInt(s);
+                referenceString.add(toInt);
+            } catch (NumberFormatException n) {
+                System.out.println("Please enter a number.");
+                return;
+            }
         }
 
+        // Algorithm input
         System.out.println();
         System.out.println("1. FIFO");
         System.out.println("2. Optimal Replacement");
@@ -64,68 +83,52 @@ public class App {
 
         // Algorithm error handling
         if (algorithm < 1 || algorithm > 5){
-            System.out.println("You must input a valid algorithm index");
+            System.out.println("You must input a valid algorithm index.");
             return;
         }
 
+        // Frame input
         System.out.println();
         System.out.print("Enter the number of frames (2-9): ");
         framesUsed = userInput.nextInt();
         userInput.nextLine(); // This line fixes a loop bug (consumes the line break)
 
-        // Frames error handling
+        // Frame error handling
         if (framesUsed < 2 || framesUsed > 9){
-            System.out.println("You must input a valid number of frames");
+            System.out.println("You must input a valid number of frames.");
             return;
         }
-
-        //! YOU MIGHT WANT TO MOVE THIS TO MAIN LATER SO YOU CAN CONTROL OUTPUT BETTER
-        System.out.println();
-        System.out.println("Reference string: " + referenceString.toString());
-        System.out.println("Algorithm: " + algorithm);
-        System.out.println("Number of frames: " + framesUsed);
     }
 
     public static void algorithmSelector(){
         switch(algorithm) {
             case 1:
+                System.out.println();
+                System.out.println("Algorithm: FIFO");
                 //! CALL FIFO()
+                
                 break;
             case 2:
+                System.out.println();
+                System.out.println("Algorithm: Optimal Replacement");
                 //! CALL OptimalReplacement()
                 break;
             case 3:
+                System.out.println();
+                System.out.println("Algorithm: LRU using time-of-use");
                 //! CALL LRUClock()
                 break;
             case 4:
+                System.out.println();
+                System.out.println("Algorithm: LRU approximation using reference byte");
                 //! CALL LRUApprox()
                 break;
             case 5:
+                System.out.println();
+                System.out.println("Algorithm: LFU");
                 //! CALL LFU()
                 break;
         }
-    }
-
-    public static void FIFO(){
-        for (int i = 0; i < framesUsed; i++){
-            pageList.add(referenceString.get(i));
-            framePrinter();
-        }
-
-        // Actual FIFO operation
-        for (int i = framesUsed; i < referenceString.size(); i++) {
-            String currentPage = referenceString.get(i);
-    
-            if (pageList.contains(currentPage)) { // No page fault if the page is already in pageList
-                continue;
-            }
-    
-            pageList.remove(0);
-            pageList.add(currentPage);
-            framePrinter();
-        }
-
-
     }
 
     public static void framePrinter(){
@@ -137,6 +140,54 @@ public class App {
             System.out.print("| " + pageList.get(i) + " ");
         }
         System.out.println("|");
+        pageFaultCounter++;
+    }
+
+    public static void FIFO(){
+        for (int i = 0; i < framesUsed; i++){
+            pageList.add(referenceString.get(i));
+            framePrinter();
+        }
+
+        // Actual FIFO operation
+        for (int i = framesUsed; i < referenceString.size(); i++) {
+            int currentPage = referenceString.get(i);
+    
+            if (pageList.contains(currentPage)) { // No page fault if the page is already in pageList
+                continue;
+            }
+    
+            pageList.remove(0);
+            pageList.add(currentPage);
+            framePrinter();
+        }
+    }
+
+    public static void optimalReplacement(){
+        for (int i = 0; i < framesUsed; i++){
+            pageList.add(referenceString.get(i));
+            framePrinter();
+        }
+
+        
+        for (int i = framesUsed; i < referenceString.size(); i++) {
+            int currentPage = referenceString.get(i);
+    
+            if (pageList.contains(currentPage)) { // No page fault if the page is already in pageList
+                continue;
+            }
+    
+            int[] tempIndexArray = new int[framesUsed];
+            for (int j = i; j < referenceString.size(); j++){
+                tempIndexArray[j] = referenceString.indexOf(currentPage);
+            }
+
+            for (int k = 0; k < tempIndexArray.length; k++){
+                // if ()
+            }
+   
+            framePrinter();
+        }
     }
 
 }
