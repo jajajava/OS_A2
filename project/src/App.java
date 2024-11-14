@@ -124,18 +124,14 @@ public class App {
     }
 
     public static void framePrinter(){
-        if (framesUsed >= pageList.size()){
-            for (int i = 0; i < framesUsed; i++){
-                if (i >= pageList.size()){
-                    System.out.print("|  ");
-                    continue;
-                }
-                System.out.print("| " + pageList.get(i) + " ");
+        for (int i = 0; i < framesUsed; i++){
+            if (i >= pageList.size()){
+                System.out.print("|   ");
+                continue;
             }
+            System.out.print("| " + pageList.get(i) + " ");
         }
         System.out.println("|");
-        System.out.println("Number of page faults: " + pageList.get(pageList.size() - 1));
-        System.out.println("---------------------------------------------");
     }
 
 }
