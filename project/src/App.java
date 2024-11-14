@@ -24,7 +24,11 @@ public class App {
             exitApp = true;
             return;
         }
-        //! parse it before assigning to arrayList
+
+        String[] tempRefStringArray = tempReferenceString.split(", ");
+        for (String s : tempRefStringArray){
+            referenceString.add(s);
+        }
 
         System.out.println();
         System.out.println("1. FIFO");
@@ -41,6 +45,10 @@ public class App {
 
         userInput.close();
 
-        System.out.println(tempReferenceString + ", " + algorithm + ", " + framesUsed);
+        //! YOU MIGHT WANT TO MOVE THIS TO MAIN LATER SO YOU CAN CONTROL OUTPUT BETTER
+        System.out.println();
+        System.out.println("Reference string: " + referenceString.toString());
+        System.out.println("Algorithm: " + algorithm);
+        System.out.println("Number of frames: " + framesUsed);
     }
 }
