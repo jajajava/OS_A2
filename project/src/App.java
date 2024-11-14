@@ -3,6 +3,8 @@ import java.util.Scanner;
 
 public class App {
     public static ArrayList<String> referenceString = new ArrayList<>();
+    public static ArrayList<String> pageList = new ArrayList<>();
+    //! might need separate int to count page faults
     public static int algorithm;
     public static int framesUsed;
     public static boolean exitApp = false;
@@ -11,13 +13,14 @@ public class App {
         Scanner userInput = new Scanner(System.in);
         while (exitApp != true){
             referenceString.clear();
+            pageList.clear();
             algorithm = 0;
             framesUsed = 0;
             userInputter(userInput);
             if (exitApp == true){
                 return;
             }
-            System.out.println("---------------------------------------------");
+            FIFO();
         }
         //! Algorithm selector must follow
         userInput.close();
@@ -84,6 +87,55 @@ public class App {
     }
 
     public static void algorithmSelector(){
-
+        switch(algorithm) {
+            case 1:
+                //! CALL FIFO()
+                break;
+            case 2:
+                //! CALL OptimalReplacement()
+                break;
+            case 3:
+                //! CALL LRUClock()
+                break;
+            case 4:
+                //! CALL LRUApprox()
+                break;
+            case 5:
+                //! CALL LFU()
+                break;
+        }
     }
+
+    public static void FIFO(){
+        for (int i = 0; i < framesUsed; i++){
+                pageList.add(referenceString.get(i));
+                framePrinter();
+                // System.out.printf("| %s ", pageList.get(i));
+        }
+        // System.out.println("|");
+        // System.out.println();
+
+        // for (int i = 0; i < framesUsed; i++){
+        //     pageList.add(referenceString.get(i));
+        //     System.out.printf("| %s ", pageList.get(i));
+        // }
+        // System.out.println("|");
+        // System.out.println();
+    }
+
+    public static void framePrinter(){
+        if (framesUsed >= pageList.size()){
+            for (int i = 0; i < framesUsed; i++){
+                if (i >= pageList.size()){
+                    System.out.print("|  ");
+                    continue;
+                }
+                System.out.print("| " + pageList.get(i) + " ");
+            }
+        }
+        System.out.println("|");
+        System.out.println("Number of page faults: " + pageList.get(pageList.size() - 1));
+        System.out.println("---------------------------------------------");
+    }
+
 }
