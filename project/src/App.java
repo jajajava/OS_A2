@@ -108,19 +108,24 @@ public class App {
 
     public static void FIFO(){
         for (int i = 0; i < framesUsed; i++){
-                pageList.add(referenceString.get(i));
-                framePrinter();
-                // System.out.printf("| %s ", pageList.get(i));
+            pageList.add(referenceString.get(i));
+            framePrinter();
         }
-        // System.out.println("|");
-        // System.out.println();
 
-        // for (int i = 0; i < framesUsed; i++){
-        //     pageList.add(referenceString.get(i));
-        //     System.out.printf("| %s ", pageList.get(i));
-        // }
-        // System.out.println("|");
-        // System.out.println();
+        // Actual FIFO operation
+        for (int i = framesUsed; i < referenceString.size(); i++) {
+            String currentPage = referenceString.get(i);
+    
+            if (pageList.contains(currentPage)) { // No page fault if the page is already in pageList
+                continue;
+            }
+    
+            pageList.remove(0);
+            pageList.add(currentPage);
+            framePrinter();
+        }
+
+
     }
 
     public static void framePrinter(){
