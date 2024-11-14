@@ -8,18 +8,28 @@ public class App {
     public static boolean exitApp = false;
     
     public static void main(String[] args) throws Exception {
-        userInput();
+        Scanner userInput = new Scanner(System.in);
+        while (exitApp != true){
+            userInputter(userInput);
+            if ((referenceString == null || referenceString.size() > 15) || (algorithm < 1 || algorithm > 5) || (framesUsed < 1 || framesUsed > 9)){
+                System.out.println("Input incorrect. Try again.");
+                continue;
+            }
+            System.out.println("temp");
+        }
         //! Algorithm selector must follow
-
+        userInput.close();
     }
 
-    public static void userInput(){
-        Scanner userInput = new Scanner(System.in);
-        
+    public static void userInputter(Scanner userInput){
+        System.out.println();
         System.out.print("Enter a reference string separated with \", \": ");
         String tempReferenceString = userInput.nextLine();
         if (tempReferenceString.equals("9999")){
             userInput.close();
+            referenceString = null;
+            algorithm = 0;
+            framesUsed = 0;
             System.out.println("Goodbye.");
             exitApp = true;
             return;
@@ -43,12 +53,16 @@ public class App {
         System.out.print("Enter the number of frames (2-9): ");
         framesUsed = userInput.nextInt();
 
-        userInput.close();
+        userInput.nextLine(); // This line fixes a loop bug (consumes the line break)
 
         //! YOU MIGHT WANT TO MOVE THIS TO MAIN LATER SO YOU CAN CONTROL OUTPUT BETTER
         System.out.println();
         System.out.println("Reference string: " + referenceString.toString());
         System.out.println("Algorithm: " + algorithm);
         System.out.println("Number of frames: " + framesUsed);
+    }
+
+    public static void algorithmSelector(){
+
     }
 }
