@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class App {
@@ -27,7 +28,7 @@ public class App {
                 System.out.println("Content of frames after each page-fault: ");
                 
                 //! Algorithm selector here
-                FIFO();
+                optimalReplacement();
                 System.out.println();
                 System.out.println("Number of page faults: " + pageFaultCounter);
             }
@@ -51,6 +52,7 @@ public class App {
         
         // Reference string error handling
         //! See if you can go without a clause to have at least one input. If your algos work with empty array, keep it that way
+
         if (tempRefStringArray.length > 15){
             System.out.println("You cannot have more than 15 references.");
             return;
@@ -105,13 +107,12 @@ public class App {
             case 1:
                 System.out.println();
                 System.out.println("Algorithm: FIFO");
-                //! CALL FIFO()
-                
+                FIFO();
                 break;
             case 2:
                 System.out.println();
                 System.out.println("Algorithm: Optimal Replacement");
-                //! CALL OptimalReplacement()
+                optimalReplacement();
                 break;
             case 3:
                 System.out.println();
@@ -163,31 +164,44 @@ public class App {
         }
     }
 
-    public static void optimalReplacement(){
-        for (int i = 0; i < framesUsed; i++){
+    public static void optimalReplacement() {
+        for (int i = 0; i < framesUsed; i++) {
             pageList.add(referenceString.get(i));
             framePrinter();
         }
-
-        
+    
         for (int i = framesUsed; i < referenceString.size(); i++) {
             int currentPage = referenceString.get(i);
     
-            if (pageList.contains(currentPage)) { // No page fault if the page is already in pageList
+            // If the page is already in memory, no page fault occurs
+            if (pageList.contains(currentPage)) {
                 continue;
             }
     
             int[] tempIndexArray = new int[framesUsed];
-            for (int j = i; j < referenceString.size(); j++){
-                tempIndexArray[j] = referenceString.indexOf(currentPage);
+            int highestIndex = -1;
+            int frameToReplace = -1;
+    
+            for (int j = 0; j < framesUsed; j++){
+                List<Integer> shortenedList = referenceString.subList(i + 1, referenceString.size());
+                tempIndexArray[j] = shortenedList.indexOf(pageList.get(j));
+    
+                if (tempIndexArray[j] == -1){ // If the page isn't found again in reference String, it gets selected
+                    pageList.set(j, currentPage);
+                    frameToReplace = -1;
+                    break;
+                } else if (tempIndexArray[j] > highestIndex){ // If all values are present, it selects the one with the highest index (furthest away)
+                    highestIndex = tempIndexArray[j];
+                    frameToReplace = j;
+                }
             }
-
-            for (int k = 0; k < tempIndexArray.length; k++){
-                // if ()
+            if (frameToReplace != -1){ // Gets updated only if there IS a frame to replace
+                pageList.set(frameToReplace, currentPage);
             }
-   
+            
             framePrinter();
         }
     }
+    
 
 }
