@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 public class App {
@@ -13,7 +14,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         Scanner userInput = new Scanner(System.in);
-        while (exitApp != true){
+        while (!exitApp){
             referenceString.clear();
             pageList.clear();
             mapList.clear();
@@ -22,15 +23,15 @@ public class App {
             pageFaultCounter = 0;
 
             userInputter(userInput);
-            if (exitApp == true){
+            if (exitApp){
                 return;
             } else if (framesUsed != 0){ // If it reached framesUsed, the other values had to have been set too
                 System.out.println("Reference string: " + referenceString.toString());
                 System.out.println("Number of frames: " + framesUsed);
                 System.out.println("Content of frames after each page-fault: ");
                 
-                //! Algorithm selector here
-                LRUClock();
+                // Algorithm selector here
+                algorithmSelector();
                 System.out.println();
                 System.out.println("Number of page faults: " + pageFaultCounter);
             }
@@ -97,6 +98,36 @@ public class App {
         }
     }
 
+    public static void algorithmSelector(){
+        switch(algorithm) {
+            case 1:
+                System.out.println();
+                System.out.println("Algorithm: FIFO");
+                FIFO();
+                break;
+            case 2:
+                System.out.println();
+                System.out.println("Algorithm: Optimal Replacement");
+                optimalReplacement();
+                break;
+            case 3:
+                System.out.println();
+                System.out.println("Algorithm: LRU using time-of-use");
+                LRUClock();
+                break;
+            case 4:
+                System.out.println();
+                System.out.println("Algorithm: LRU approximation using reference byte");
+                //! Call LRUApprox()
+                break;
+            case 5:
+                System.out.println();
+                System.out.println("Algorithm: LFU");
+                //! Call LFU()
+                break;
+        }
+    }
+
     public static void framePrinter(){
         if (algorithm < 3){
             for (int i = 0; i < framesUsed; i++){
@@ -123,25 +154,82 @@ public class App {
         }
     }
 
+    public static void FIFO(){
+        for (int i = 0; i < Math.min(framesUsed, referenceString.size()); i++){
+            pageList.add(referenceString.get(i));
+            framePrinter();
+        }
+
+        // Actual FIFO operation
+        for (int i = framesUsed; i < referenceString.size(); i++) {
+            int currentPage = referenceString.get(i);
+            if (pageList.contains(currentPage)) { // No page fault if the page is already in pageList
+                continue;
+            }
+            pageList.remove(0);
+            pageList.add(currentPage);
+            framePrinter();
+        }
+    }
+
+    public static void optimalReplacement() {
+        for (int i = 0; i < Math.min(framesUsed, referenceString.size()); i++) {
+            pageList.add(referenceString.get(i));
+            framePrinter();
+        }
+    
+        for (int i = framesUsed; i < referenceString.size(); i++) {
+            int currentPage = referenceString.get(i);
+    
+            // If the page is already in memory, no page fault occurs
+            if (pageList.contains(currentPage)) {
+                continue;
+            }
+    
+            int[] tempIndexArray = new int[framesUsed];
+            int highestIndex = -1;
+            int frameToReplace = -1;
+    
+            for (int j = 0; j < pageList.size(); j++){
+                List<Integer> shortenedList = referenceString.subList(i + 1, referenceString.size());
+                tempIndexArray[j] = shortenedList.indexOf(pageList.get(j));
+    
+                if (tempIndexArray[j] == -1){ // If the page isn't found again in reference String, it gets selected
+                    pageList.set(j, currentPage);
+                    frameToReplace = -1;
+                    break;
+                } else if (tempIndexArray[j] > highestIndex){ // If all values are present, select the one with the highest index (furthest away)
+                    highestIndex = tempIndexArray[j];
+                    frameToReplace = j;
+                }
+            }
+            if (frameToReplace != -1){ // Gets updated only if there IS a frame to replace
+                pageList.set(frameToReplace, currentPage);
+            }
+            
+            framePrinter();
+        }
+    }
+
     public static void LRUClock(){
-        mapList.clear();
-        for (int i = 0; i < framesUsed; i++){
+        int initialFrames = Math.min(framesUsed, referenceString.size());
+        for (int i = 0; i < initialFrames; i++){
             mapList.put(referenceString.get(i), i + 1);
             pageList.add(referenceString.get(i));
             framePrinter();
         }
 
-        for (int i = framesUsed; i < referenceString.size(); i++) {
+        for (int i = initialFrames; i < referenceString.size(); i++) {
             int currentPage = referenceString.get(i);
 
             if (pageList.contains(currentPage)) {
-                // No page fault. Update the last use time (value)
+                // No page fault; update the last use time
                 mapList.replace(currentPage, i + 1);
                 continue;
             }
 
             int lruPage = -1;
-            int minTime = Integer.MAX_VALUE;
+            int minTime = 10000;
 
             for (int page : pageList) {
                 int lastUsedTime = mapList.get(page);
