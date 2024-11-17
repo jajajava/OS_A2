@@ -109,8 +109,6 @@ public class App {
             }
         }
 
-        // 
-
         // Algorithm input
         System.out.println();
         System.out.println("1. FIFO");
@@ -326,11 +324,12 @@ public class App {
     
     public static void LRUApprox(){
         HashSet<Integer> referencedPagesSinceLastShift = new HashSet<>();
-        int pagesSinceLastShift = 0;
-
+        int pagesMetSinceLastShift = 0;
+    
         for (int i = 0; i < referenceString.size(); i++) {
             int currentPage = referenceString.get(i);
-
+            pagesMetSinceLastShift++;
+    
             if (pageList.contains(currentPage)) {
                 referencedPagesSinceLastShift.add(currentPage);
             } else {
@@ -340,7 +339,7 @@ public class App {
                 } else {
                     int minRefByteValue = Integer.MAX_VALUE;
                     int pageToReplace = -1;
-
+    
                     for (int page : pageList) {
                         String refByteString = referenceBytes.get(page);
                         int refByteValue = Integer.parseInt(refByteString, 2);
@@ -349,42 +348,40 @@ public class App {
                             pageToReplace = page;
                         }
                     }
-
+    
                     pageList.remove((Integer) pageToReplace);
                     referenceBytes.remove(pageToReplace);
-
+    
                     pageList.add(currentPage);
                     referenceBytes.put(currentPage, "11111111");
                 }
                 referencedPagesSinceLastShift.add(currentPage);
-
+    
                 framePrinter();
             }
-
-            pagesSinceLastShift++;
-
-            if (pagesSinceLastShift == 3 || i == referenceString.size() - 1) {
-                System.out.println("Reference bytes before shifting:");
+    
+            if (pagesMetSinceLastShift == 3 || i == referenceString.size() - 1) {
+                System.out.println("\nReference bytes before shifting:");
                 printReferenceBytes();
-
+    
                 for (int page : pageList) {
                     String refByteString = referenceBytes.get(page);
-                    refByteString = refByteString.substring(1);
+                    refByteString = refByteString.substring(0, 7);
                     if (referencedPagesSinceLastShift.contains(page)) {
-                        refByteString = refByteString + '1';
+                        refByteString = '1' + refByteString;
                     } else {
-                        refByteString = refByteString + '0';
+                        refByteString = '0' + refByteString;
                     }
                     referenceBytes.put(page, refByteString);
                 }
                 System.out.println("Reference bytes after shifting:");
                 printReferenceBytes();
-
-                pagesSinceLastShift = 0;
+    
+                pagesMetSinceLastShift = 0;
                 referencedPagesSinceLastShift.clear();
             }
         }
-    }
+    }    
 
     public static void LFU(){
         int i = 0;
