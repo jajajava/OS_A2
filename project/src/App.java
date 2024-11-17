@@ -374,7 +374,7 @@ public class App {
             }
             i++;
         }
-
+    
         for (; i < referenceString.size(); i++){
             int currentPage = referenceString.get(i);
     
@@ -389,30 +389,31 @@ public class App {
                         minFrequency = freq;
                     }
                 }
-
+    
                 ArrayList<Integer> candidates = new ArrayList<>();
                 for (int page : pageList){
                     if (frequencyMap.get(page) == minFrequency){
                         candidates.add(page);
                     }
                 }
-                
+    
                 int pageToReplace = -1;
-                for (int page : pageList){
+                int indexToReplace = -1;
+                for (int j = 0; j < pageList.size(); j++){
+                    int page = pageList.get(j);
                     if (candidates.contains(page)){
                         pageToReplace = page;
+                        indexToReplace = j;
                         break;
                     }
                 }
-
-                pageList.remove((Integer) pageToReplace);
+                pageList.set(indexToReplace, currentPage);
+    
                 frequencyMap.remove(pageToReplace);
-    
-                pageList.add(currentPage);
                 frequencyMap.put(currentPage, 1);
-    
+
                 framePrinter();
             }
         }
-    }
+    }    
 }
