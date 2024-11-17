@@ -31,7 +31,37 @@ public class App {
             if (exitApp){
                 return;
             } else if (framesUsed != 0){ // If it reached framesUsed, the other values had to have been set too
-                System.out.println("Reference string: " + referenceString.toString());
+                System.out.println();
+                switch (algorithm){
+                    case 1:
+                        System.out.println();
+                        System.out.println("Algorithm: FIFO");
+                        break;
+                    case 2:
+                        System.out.println();
+                        System.out.println("Algorithm: Optimal Replacement");
+                        break;
+                    case 3:
+                        System.out.println();
+                        System.out.println("Algorithm: LRU using time-of-use");
+                        break;
+                    case 4:
+                        System.out.println();
+                        System.out.println("Algorithm: LRU approximation using reference byte");
+                        break;
+                    case 5:
+                        System.out.println();
+                        System.out.println("Algorithm: LFU");
+                        break;
+                }
+                System.out.print("Reference string: ");
+                for (int i = 0; i < referenceString.size(); i++){
+                    if (i != referenceString.size()-1){
+                        System.out.print(referenceString.get(i) + ", ");
+                    } else {
+                        System.out.println(referenceString.get(i));
+                    }
+                }
                 System.out.println("Number of frames: " + framesUsed);
                 System.out.println("Content of frames after each page-fault: ");
                 
@@ -39,6 +69,7 @@ public class App {
                 algorithmSelector();
                 System.out.println();
                 System.out.println("Number of page faults: " + pageFaultCounter);
+                System.out.println();
             }
             System.out.println("---------------------------------------------");
         }
@@ -111,30 +142,25 @@ public class App {
     }
 
     public static void algorithmSelector(){
-        switch(algorithm) {
+        switch (algorithm) {
             case 1:
                 System.out.println();
-                System.out.println("Algorithm: FIFO");
                 FIFO();
                 break;
             case 2:
                 System.out.println();
-                System.out.println("Algorithm: Optimal Replacement");
                 optimalReplacement();
                 break;
             case 3:
                 System.out.println();
-                System.out.println("Algorithm: LRU using time-of-use");
                 LRUClock();
                 break;
             case 4:
                 System.out.println();
-                System.out.println("Algorithm: LRU approximation using reference byte");
                 LRUApprox();
                 break;
             case 5:
                 System.out.println();
-                System.out.println("Algorithm: LFU");
                 LFU();
                 break;
         }
