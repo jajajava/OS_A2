@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 
@@ -7,6 +8,7 @@ public class App {
     public static ArrayList<Integer> referenceString = new ArrayList<>();
     public static ArrayList<Integer> pageList = new ArrayList<>();
     public static HashMap<Integer, Integer> mapList = new HashMap<>();
+    public static HashMap<Integer, String> referenceBytes = new HashMap<>();
     public static int algorithm;
     public static int framesUsed;
     public static int pageFaultCounter;
@@ -18,6 +20,7 @@ public class App {
             referenceString.clear();
             pageList.clear();
             mapList.clear();
+            referenceBytes.clear();
             algorithm = 0;
             framesUsed = 0;
             pageFaultCounter = 0;
@@ -31,7 +34,7 @@ public class App {
                 System.out.println("Content of frames after each page-fault: ");
                 
                 // Algorithm selector here
-                algorithmSelector();
+                LRUApprox();
                 System.out.println();
                 System.out.println("Number of page faults: " + pageFaultCounter);
             }
@@ -118,7 +121,7 @@ public class App {
             case 4:
                 System.out.println();
                 System.out.println("Algorithm: LRU approximation using reference byte");
-                //! Call LRUApprox()
+                LRUApprox();
                 break;
             case 5:
                 System.out.println();
@@ -151,7 +154,32 @@ public class App {
             }
             System.out.println("|");
             pageFaultCounter++;
+        } else if (algorithm == 4){
+            for (int i = 0; i < framesUsed; i++){
+                if (i >= pageList.size()){
+                    System.out.print("|              ");
+                    continue;
+                }
+                int page = pageList.get(i);
+                String refByteString = referenceBytes.get(page);
+                System.out.print("| " + page + " : " + refByteString + " ");
+            }
+            System.out.println("|");
+            pageFaultCounter++;
         }
+    }
+
+    private static void printReferenceBytes() {
+        for (int i = 0; i < framesUsed; i++){
+            if (i >= pageList.size()){
+                System.out.print("|            ");
+                continue;
+            }
+            int page = pageList.get(i);
+            String refByteString = referenceBytes.get(page);
+            System.out.print("| " + page + " : " + refByteString + " ");
+        }
+        System.out.println("|");
     }
 
     public static void FIFO(){
@@ -248,4 +276,92 @@ public class App {
             framePrinter();
         }
     }
+
+    
+    public static void LRUApprox(){
+        // Initialize the required data structures
+        referenceBytes.clear(); // Clear reference bytes
+        HashSet<Integer> referencedPagesSinceLastShift = new HashSet<>();
+        int pagesSinceLastShift = 0;
+
+        for (int i = 0; i < referenceString.size(); i++) {
+            int currentPage = referenceString.get(i);
+
+            if (pageList.contains(currentPage)) {
+                // Page hit
+                // Mark the page as referenced since the last shift
+                referencedPagesSinceLastShift.add(currentPage);
+                // No page fault
+            } else {
+                // Page fault
+                if (pageList.size() < framesUsed) {
+                    // Free frame available
+                    pageList.add(currentPage);
+                    referenceBytes.put(currentPage, "11111111"); // Initialize with '1's
+                } else {
+                    // Need to replace a page
+                    // Find the page with the smallest reference byte (more '0's)
+                    int minRefByteValue = Integer.MAX_VALUE;
+                    int pageToReplace = -1;
+
+                    for (int page : pageList) {
+                        String refByteString = referenceBytes.get(page);
+                        int refByteValue = Integer.parseInt(refByteString, 2);
+                        if (refByteValue < minRefByteValue) {
+                            minRefByteValue = refByteValue;
+                            pageToReplace = page;
+                        }
+                    }
+
+                    // Replace the page
+                    pageList.remove((Integer) pageToReplace);
+                    referenceBytes.remove(pageToReplace);
+
+                    pageList.add(currentPage);
+                    referenceBytes.put(currentPage, "11111111"); // Initialize with '1's
+                }
+
+                // Mark the current page as referenced
+                referencedPagesSinceLastShift.add(currentPage);
+
+                // Print the frame contents after the page fault
+                framePrinter();
+            }
+
+            pagesSinceLastShift++;
+
+            // After every three pages or at the end, perform the shift
+            if (pagesSinceLastShift == 3 || i == referenceString.size() - 1) {
+                // Display reference bytes before shifting
+                System.out.println("Reference bytes before shifting:");
+                printReferenceBytes();
+
+                // Perform the shift using string manipulation
+                for (int page : pageList) {
+                    String refByteString = referenceBytes.get(page);
+                    // Remove the first character (MSB)
+                    refByteString = refByteString.substring(1);
+                    // Determine the new LSB
+                    if (referencedPagesSinceLastShift.contains(page)) {
+                        // Set LSB to '1'
+                        refByteString = refByteString + '1';
+                    } else {
+                        // Set LSB to '0'
+                        refByteString = refByteString + '0';
+                    }
+                    referenceBytes.put(page, refByteString);
+                }
+
+                // Display reference bytes after shifting
+                System.out.println("Reference bytes after shifting:");
+                printReferenceBytes();
+
+                // Reset counters and sets
+                pagesSinceLastShift = 0;
+                referencedPagesSinceLastShift.clear();
+            }
+        }
+    }
+
+
 }
